@@ -88,21 +88,26 @@ class snakeEnv(gym.Env):
         pass
 
     def _place_food(self):
-        pass
+        while True:
+            x = np.random.randint(0, self.grid_size)
+            y = np.random.randint(0, self.grid_size)
+            if (x, y) not in self.snake:
+                self.food = (x, y)
+                break
 
 
-    def _get_state(self):
+    def _get_state(self)  -> np.ndarray:
         head_x, head_y = self.snake[0]
         
-        danger_straight = self._is_danger(
+        danger_straight = self._is_danger(   # x,y + 轴上偏移量
             head_x + (self.direction == Direction.RIGHT) - (self.direction == Direction.LEFT),
             head_y + (self.direction == Direction.DOWN) - (self.direction == Direction.UP)
         )
-        danger_right = self._is_danger(
+        danger_right = self._is_danger(     # x,y + 90°偏移量
             head_x + (self.direction == Direction.DOWN) - (self.direction == Direction.UP),
             head_y + (self.direction == Direction.LEFT) - (self.direction == Direction.RIGHT)
         )
-        danger_left = self._is_danger(
+        danger_left = self._is_danger(     # x,y + -90°偏移量
             head_x + (self.direction == Direction.UP) - (self.direction == Direction.DOWN),
             head_y + (self.direction == Direction.RIGHT) - (self.direction == Direction.LEFT)
         )
@@ -128,6 +133,10 @@ class snakeEnv(gym.Env):
                 y < 0 or y >= self.grid_size or
                 (x, y) in self.snake)
 
+
+
+    def close(self):
+        pygame.quit()
 
 
 
