@@ -40,7 +40,7 @@ class Config:
 
 
       "----------------------------------model parameters----------------------------------"
-      batch_size = 6 # Reward buffer 批量大小
+      batch_size = 32 # Reward buffer 批量大小
       gamma = 0.95
       epsilon = 1.0   # 探索率
       learning_rate = 0.001  # 学习率

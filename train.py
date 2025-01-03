@@ -41,9 +41,9 @@ def record_score(score, episode_now):
     # 打印训练信息
     print(f'Game {episode_now} Score {score} Record {record}')
     
-    # 更新得分图
-    if episode_now % Config.plot_scores_every == 0:
-        plot_scores(scores, mean_scores)
+    # # 更新得分图
+    # if episode_now % Config.plot_scores_every == 0:
+    #     plot_scores(scores, mean_scores)
 
 
 def train():
@@ -51,7 +51,7 @@ def train():
     # 初始化
     render_every = Config.render_every
 
-    env = snakeEnv(grid_size=20)
+    env = snakeEnv()
     state_size = env.observation_space.shape[0] #11
     action_size = env.action_space.n  #4
     agent = DQNAgent(state_size, action_size)
@@ -93,7 +93,6 @@ def train():
         record_score(scores, e)
 
     env.close()
-    agent.save()
     plt.close()
 
 

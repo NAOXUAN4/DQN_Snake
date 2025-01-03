@@ -21,16 +21,18 @@ class snakeEnv(gym.Env):
         self.window_size = Config.window_size  #从配置文件中读取
         self.action_space = Config.action_space
         self.observation_space = Config.observation_space
+        self.cell_size = Config.cell_size
 
-        #初始化 pygame
-        pygame.init()
-        self.screen = pygame.display.set_mode((self.window_size, self.window_size))
-        pygame.display.set_caption("🐍")
 
         self.reset()
 
 
     def reset(self):
+
+        # 初始化 pygame
+        pygame.init()
+        self.screen = pygame.display.set_mode((self.window_size, self.window_size))
+        pygame.display.set_caption("🐍")
          
         # 初始化 snake位置数组
         self.snake = [(self.grid_size // 2, self.grid_size // 2)]  # 蛇的初始位置 (环境中心)
@@ -61,16 +63,16 @@ class snakeEnv(gym.Env):
         elif self.direction == Direction.DOWN:
             new_head = (head_x, head_y + 1)
 
+        isDead = False
+
         #是否死亡
-        isDead = (
-            head_x < 0 or head_x >= self.grid_size or
-            head_y < 0 or head_y >= self.grid_size or
-            (head_x, head_y) in self.snake[1:]
-        )
+        if head_x < 0 or head_x >= self.grid_size or \
+            head_y < 0 or head_y >= self.grid_size or \
+            (head_x, head_y) in self.snake[1:] : isDead = True
+
         
         if isDead:
             state = self._get_state()
-            print(state)
             return state, Config.reward["dead"], isDead, {}    # return: state、reward、isDone、other
         
         # 移动蛇
@@ -101,8 +103,8 @@ class snakeEnv(gym.Env):
                 surface= self.screen,
                 color=Config.color["snake"],
                 rect=pygame.Rect(
-                    sec[0] * Config.cell_size,   # x,y
-                    sec[1] * Config.cell_size, 
+                    sec[0] * self.cell_size,   # x,y
+                    sec[1] * self.cell_size,
                     Config.cell_size - 1,  # w,h
                     Config.cell_size - 1
                     )
@@ -113,8 +115,8 @@ class snakeEnv(gym.Env):
             surface= self.screen,
             color=Config.color["food"],
             rect=pygame.Rect(
-                self.food[0] * Config.cell_size,   # x,y
-                self.food[1] * Config.cell_size, 
+                self.food[0] * self.cell_size,   # x,y
+                self.food[1] * self.cell_size,
                 Config.cell_size - 1,  # w,h
                 Config.cell_size - 1
             )
