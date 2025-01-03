@@ -79,18 +79,19 @@ class DQNAgent:
 if __name__ == '__main__':
 
     """
-    state = [
-    snake_head_x,      # 蛇头x坐标
-    snake_head_y,      # 蛇头y坐标
-    food_x,           # 食物x坐标
-    food_y,           # 食物y坐标
-    is_danger_up,     # 上方是否危险
-    is_danger_right,  # 右方是否危险
-    is_danger_down,   # 下方是否危险
-    is_danger_left,   # 左方是否危险
-    direction_up,     # 当前方向是否向上
-    direction_right,  # 当前方向是否向右
-    direction_down    # 当前方向是否向下
+        state = [
+            head_x/self.grid_size,                    # 蛇头x坐标
+            head_y/self.grid_size,                    # 蛇头y坐标
+            self.food[0]/self.grid_size,              # 食物x坐标
+            self.food[1]/self.grid_size,              # 食物y坐标
+            danger_straight,                          # 前方危险
+            danger_right,                             # 右方危险
+            danger_left,                              # 左方危险
+            self.direction == Direction.RIGHT,        # 当前方向
+            self.direction == Direction.DOWN,
+            self.direction == Direction.LEFT,
+            self.direction == Direction.UP
+        ]
     """
     agent = DQNAgent(state_size=5, action_size=6)
 

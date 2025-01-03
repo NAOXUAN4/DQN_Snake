@@ -17,6 +17,13 @@ class Config:
           shape=(11,), 
           dtype=pygame.float32
           )
+    
+    # 奖励
+    reward = {
+        "ate": 10,
+        "dead": -10,
+        "step": -0.1
+    }
  
 
     "agent parameters"
