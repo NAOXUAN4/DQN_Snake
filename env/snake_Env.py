@@ -13,12 +13,12 @@ class Direction(Enum):
         LEFT = 3
 
 class snakeEnv(gym.Env):
-    def __init__(self, grid_size=20):
+    def __init__(self, grid_size = Config.grid_size):
         super(snakeEnv, self).__init__()
 
         # 初始化环境参数
-        self.grid_size = Config.grid_size        #从配置文件中读取
-        self.window_size = Config.window_size
+        self.grid_size =  grid_size       
+        self.window_size = Config.window_size  #从配置文件中读取
         self.action_space = Config.action_space
         self.observation_space = Config.observation_space
 
@@ -37,7 +37,7 @@ class snakeEnv(gym.Env):
         self.direction = Direction.RIGHT  
 
         # 初始化 food
-        self.food = self.place_food()
+        self.food = self._place_food()
 
         # 初始化分数
         self.score = 0
@@ -76,7 +76,7 @@ class snakeEnv(gym.Env):
         if new_head == self.food:
             self.score += 1
             reward_tmp = Config.reward["eat"]
-            self.place_food()  # 重新生成食物
+            self._place_food()  # 重新生成食物
         else:
             self.snake.pop()  # 若没吃到食物，移除尾部
             reward_tmp = Config.reward["step"]
@@ -84,16 +84,44 @@ class snakeEnv(gym.Env):
         return self._get_state(), reward_tmp, isDead, {}
 
 
-    def render(self):
-        pass
+    def render(self, mode='human'):
+
+        self.screen.fill((0, 0, 0))
+        
+        # snake
+        for sec in self.snake:
+            pygame.draw.rect(
+                surface= self.screen,
+                color=Config.color["snake"],
+                rect=pygame.Rect(
+                    sec[0] * Config.cell_size,   # x,y
+                    sec[1] * Config.cell_size, 
+                    Config.cell_size - 1,  # w,h
+                    Config.cell_size - 1
+                    )
+            )
+
+        # food 
+        pygame.draw.rect(
+            surface= self.screen,
+            color=Config.color["food"],
+            rect=pygame.Rect(
+                self.food[0] * Config.cell_size,   # x,y
+                self.food[1] * Config.cell_size, 
+                Config.cell_size - 1,  # w,h
+                Config.cell_size - 1
+            )
+        )
+
+        pygame.display.flip()
 
     def _place_food(self):
         while True:
             x = np.random.randint(0, self.grid_size)
             y = np.random.randint(0, self.grid_size)
             if (x, y) not in self.snake:
-                self.food = (x, y)
-                break
+                return (x, y)
+            
 
 
     def _get_state(self)  -> np.ndarray:
@@ -132,8 +160,6 @@ class snakeEnv(gym.Env):
         return (x < 0 or x >= self.grid_size or
                 y < 0 or y >= self.grid_size or
                 (x, y) in self.snake)
-
-
 
     def close(self):
         pygame.quit()

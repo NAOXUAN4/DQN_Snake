@@ -4,6 +4,8 @@ import torch.nn as nn
 import random
 from collections import deque
 
+from snake_config import Config
+
 
 class DQNAgent:
     def __init__(self, state_size, action_size):
@@ -18,27 +20,29 @@ class DQNAgent:
         )
         
         self.memory = deque(maxlen=2000)  # 经验回放缓冲区
-        self.gamma = 0.95    # 折扣因子
-        self.epsilon = 1.0   # 探索率
-        self.learning_rate = 0.001  # 学习率
+        self.gamma = Config.gamma       # 折扣因子
+        self.epsilon = Config.epsilon   # 探索率
+        self.learning_rate = Config.learning_rate  # 学习率
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)   #配置Adam优化器  (Momenteum(指数平均) + RMSprop(微分减振))
-        print("DQN Agent Initialized\n\n")
+        print("\nDQN Agent Initialized\n")
 
-    def train(self, batch_size=32) -> float:
+    def train(self, batch_size = Config.batch_size) -> float:
         if len(self.memory) < batch_size:   # 等待直到经验池中经验 >= batch_size
             return 0.0
         
         self.model.train()  # 设置为训练模式
             
+        # 获取随机批次
         batch = random.sample(self.memory, batch_size)
-        states, actions, rewards, next_states, dones = zip(*batch)  #解压缩
-
-        # 转换为张量
-        states = torch.tensor(states, dtype=torch.float32)             #  shape: (batch_size, state_size)
-        actions = torch.tensor(actions, dtype=torch.int64)             #  shape: (batch_size)      
-        rewards = torch.tensor(rewards, dtype=torch.float32)           #  shape: (batch_size)
-        next_states = torch.tensor(next_states, dtype=torch.float32)   #  shape: (batch_size, state_size)
-        dones = torch.tensor(dones, dtype=torch.float32)               #  shape: (batch_size)
+        
+        batch = list(zip(*batch))  # 解压批次数据
+        print(batch[0])
+    
+        states = torch.FloatTensor(np.array(batch[0]))      # [batch_size, state_size] 
+        actions = torch.LongTensor(batch[1])                # [batch_size]
+        rewards = torch.FloatTensor(batch[2])               # [batch_size]
+        next_states = torch.FloatTensor(np.array(batch[3])) # [batch_size, state_size]
+        dones = torch.FloatTensor(batch[4])  
 
         q_values = self.model(states)                                  # state_size - > action_size (所有动作对应的reward表)   shape: (batch_size, action_size)
         next_q_values = self.model(next_states)                        # state_size - > action_size (所有动作在next_state下对应的reward表)   shape: (batch_size, action_size)
