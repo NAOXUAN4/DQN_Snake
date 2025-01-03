@@ -42,6 +42,9 @@ class snakeEnv(gym.Env):
         # 初始化分数
         self.score = 0
 
+        # 初始化state
+        return self._get_state()
+
     def step(self, action):
          
         # 获取 action 方向
@@ -66,7 +69,9 @@ class snakeEnv(gym.Env):
         )
         
         if isDead:
-            return self._get_state(), Config.reward["dead"], isDead, {}    # return: state、reward、isDone、other
+            state = self._get_state()
+            print(state)
+            return state, Config.reward["dead"], isDead, {}    # return: state、reward、isDone、other
         
         # 移动蛇
         self.snake.insert(0, new_head)
@@ -81,7 +86,9 @@ class snakeEnv(gym.Env):
             self.snake.pop()  # 若没吃到食物，移除尾部
             reward_tmp = Config.reward["step"]
 
-        return self._get_state(), reward_tmp, isDead, {}
+
+        state = self._get_state()
+        return state, reward_tmp, isDead, {}
 
 
     def render(self, mode='human'):
@@ -124,7 +131,7 @@ class snakeEnv(gym.Env):
             
 
 
-    def _get_state(self)  -> np.ndarray:
+    def _get_state(self):
         head_x, head_y = self.snake[0]
         
         danger_straight = self._is_danger(   # x,y + 轴上偏移量

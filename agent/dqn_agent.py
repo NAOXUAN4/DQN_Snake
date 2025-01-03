@@ -27,7 +27,7 @@ class DQNAgent:
         print("\nDQN Agent Initialized\n")
 
     def train(self, batch_size = Config.batch_size) -> float:
-        if len(self.memory) < batch_size:   # 等待直到经验池中经验 >= batch_size
+        if len(self.memory) < batch_size*1.5:   # 等待直到经验池中经验 >= batch_size
             return 0.0
         
         self.model.train()  # 设置为训练模式
@@ -36,8 +36,7 @@ class DQNAgent:
         batch = random.sample(self.memory, batch_size)
         
         batch = list(zip(*batch))  # 解压批次数据
-        print(batch[0])
-    
+
         states = torch.FloatTensor(np.array(batch[0]))      # [batch_size, state_size] 
         actions = torch.LongTensor(batch[1])                # [batch_size]
         rewards = torch.FloatTensor(batch[2])               # [batch_size]
@@ -80,29 +79,29 @@ class DQNAgent:
         self.memory.append((state, action, reward, next_state, done))
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    """
-        state = [
-            head_x/self.grid_size,                    # 蛇头x坐标
-            head_y/self.grid_size,                    # 蛇头y坐标
-            self.food[0]/self.grid_size,              # 食物x坐标
-            self.food[1]/self.grid_size,              # 食物y坐标
-            danger_straight,                          # 前方危险
-            danger_right,                             # 右方危险
-            danger_left,                              # 左方危险
-            self.direction == Direction.RIGHT,        # 当前方向
-            self.direction == Direction.DOWN,
-            self.direction == Direction.LEFT,
-            self.direction == Direction.UP
-        ]
-    """
-    agent = DQNAgent(state_size=5, action_size=6)
+#     """
+#         state = [
+#             head_x/self.grid_size,                    # 蛇头x坐标
+#             head_y/self.grid_size,                    # 蛇头y坐标
+#             self.food[0]/self.grid_size,              # 食物x坐标
+#             self.food[1]/self.grid_size,              # 食物y坐标
+#             danger_straight,                          # 前方危险
+#             danger_right,                             # 右方危险
+#             danger_left,                              # 左方危险
+#             self.direction == Direction.RIGHT,        # 当前方向
+#             self.direction == Direction.DOWN,
+#             self.direction == Direction.LEFT,
+#             self.direction == Direction.UP
+#         ]
+#     """
+#     agent = DQNAgent(state_size=5, action_size=6)
 
-    batch_size = 10
-    for i in range(batch_size):
-        state = np.random.rand(5)
-        action = agent.act(state)
-        reward, next_state, done = 1, np.random.rand(5), False
-        agent.memory.append((state, action, reward, next_state, done))
-    agent.train(batch_size=batch_size)
+#     batch_size = 10
+#     for i in range(batch_size):
+#         state = np.random.rand(5)
+#         action = agent.act(state)
+#         reward, next_state, done = 1, np.random.rand(5), False
+#         agent.memory.append((state, action, reward, next_state, done))
+#     agent.train(batch_size=batch_size)
