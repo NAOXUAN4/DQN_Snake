@@ -25,6 +25,14 @@ class snakeEnv(gym.Env):
         #初始化 pygame
         pygame.init()
         self.screen = pygame.display.set_mode((self.window_size, self.window_size))
+        pygame.display.set_caption("🐍")
+
+        self.reset()
+
+
+    def reset(self, action):
+         
+        pass
 
         
 
