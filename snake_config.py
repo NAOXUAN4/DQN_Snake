@@ -1,10 +1,13 @@
 from gym import spaces
 import numpy as np
+import torch
 
 class Config:
+      "----------------------------------device---------------------------------------------"
+      device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
       "----------------------------------game parameters-----------------------------------"
-      grid_size = 20  # 游戏网格大小
+      grid_size = 10  # 游戏网格大小
       window_size = 500    # 窗口大小
       cell_size = window_size / grid_size  # 单元格大小
 
@@ -20,7 +23,7 @@ class Config:
       
       # 奖励
       reward = {
-            "eat": 10,
+            "eat": 20,
             "dead": -10,
             "step": -0.1
       }
@@ -34,7 +37,7 @@ class Config:
  
 
       "----------------------------------train parameters----------------------------------"
-      episodes = 1000 # 训练次数
+      episodes = 10000 # 训练次数
       render_every = 100  # 每n轮显示一次游戏画面
       plot_scores_every = 10  # 每n轮更新一次得分图
 

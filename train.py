@@ -21,33 +21,8 @@ def plot_scores(scores, mean_scores):
     plt.text(len(mean_scores)-1, mean_scores[-1], str(mean_scores[-1]))
     plt.pause(0.1)
 
-def record_score(score, episode_now):
-
-    # 数据记录
-    scores = []
-    mean_scores = []
-    total_score = 0
-    record = 0  # 最高记录
-
-    # 记录得分
-    scores.append(score)
-    total_score += score
-    mean_score = total_score / (episode_now + 1)
-    mean_scores.append(mean_score)
-    
-    if score > record:
-        record = score
-        
-    # 打印训练信息
-    print(f'Game {episode_now} Score {score} Record {record}')
-    
-    # # 更新得分图
-    # if episode_now % Config.plot_scores_every == 0:
-    #     plot_scores(scores, mean_scores)
-
-
 def train():
-    
+
     # 初始化
     render_every = Config.render_every
 
@@ -56,17 +31,20 @@ def train():
     action_size = env.action_space.n  #4
     agent = DQNAgent(state_size, action_size)
 
-    
+    # 数据记录
+    scores = []
+    mean_scores = []
+    total_score = 0
+    record = 0  # 最高记录# 数据记录
 
     # 训练
     for e in range(Config.episodes):
         
         state = env.reset()
         isDead = False
-        scores = 0
+        score = 0
 
         while not isDead:
-            
             # render
             if e % render_every == 0:
                 env.render()
@@ -80,6 +58,7 @@ def train():
 
             # store experience
             agent.update(state, action, reward, next_state, isDead)
+            score += reward
 
             # train agent
             loss = agent.train()
@@ -90,7 +69,21 @@ def train():
             if isDead:
                 break
 
-        record_score(scores, e)
+        # 记录得分
+        scores.append(score)
+        total_score += score
+        mean_score = total_score / (e + 1)
+        mean_scores.append(mean_score)
+
+        if score > record:
+            record = score
+
+        # 打印训练信息
+        print(f'Game {e} Score {score} Record {record}')
+
+        # # 更新得分图
+        # if episode_now % Config.plot_scores_every == 0:
+        #     plot_scores(scores, mean_scores)
 
     env.close()
     plt.close()
@@ -101,4 +94,7 @@ def train():
 
 
 if __name__ == "__main__":
+
+
+
     train()

@@ -17,7 +17,7 @@ class DQNAgent:
             nn.Linear(state_size, 64),    # 输入层    state_size -> 64
             nn.ReLU(),                    # 激活函数(Relu)            
             nn.Linear(64, action_size)    # 输出层    64 -> action_size
-        )
+        ).to(Config.device)
         
         self.memory = deque(maxlen=2000)  # 经验回放缓冲区
         self.gamma = Config.gamma       # 折扣因子
@@ -37,11 +37,11 @@ class DQNAgent:
         
         batch = list(zip(*batch))  # 解压批次数据
 
-        states = torch.FloatTensor(np.array(batch[0]))      # [batch_size, state_size] 
-        actions = torch.LongTensor(batch[1])                # [batch_size]
-        rewards = torch.FloatTensor(batch[2])               # [batch_size]
-        next_states = torch.FloatTensor(np.array(batch[3])) # [batch_size, state_size]
-        dones = torch.FloatTensor(batch[4])  
+        states = torch.FloatTensor(np.array(batch[0])).to(Config.device)      # [batch_size, state_size] 
+        actions = torch.LongTensor(batch[1]).to(Config.device)                # [batch_size]
+        rewards = torch.FloatTensor(batch[2]).to(Config.device)                # [batch_size]
+        next_states = torch.FloatTensor(np.array(batch[3])).to(Config.device)  # [batch_size, state_size]
+        dones = torch.FloatTensor(batch[4]).to(Config.device)   
 
         q_values = self.model(states)                                  # state_size - > action_size (所有动作对应的reward表)   shape: (batch_size, action_size)
         next_q_values = self.model(next_states)                        # state_size - > action_size (所有动作在next_state下对应的reward表)   shape: (batch_size, action_size)
@@ -70,7 +70,7 @@ class DQNAgent:
         if random.random() < self.epsilon:  # 探索
             return random.randrange(self.action_size)
         else:  # 对当前状态选择最优动作
-            state = torch.tensor(state, dtype=torch.float32).unsqueeze(0)  # shape: (1, state_size)
+            state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(Config.device)  # shape: (1, state_size)
             q_values = self.model(state)  # shape: (1, action_size)
             return q_values.max(1)[1].item()
         

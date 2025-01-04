@@ -23,17 +23,17 @@ class snakeEnv(gym.Env):
         self.observation_space = Config.observation_space
         self.cell_size = Config.cell_size
 
+        # 初始化 pygame
+        pygame.init()
+        self.screen = pygame.display.set_mode((self.window_size, self.window_size))
+        pygame.display.set_caption("🐍")
+
 
         self.reset()
 
 
     def reset(self):
 
-        # 初始化 pygame
-        pygame.init()
-        self.screen = pygame.display.set_mode((self.window_size, self.window_size))
-        pygame.display.set_caption("🐍")
-         
         # 初始化 snake位置数组
         self.snake = [(self.grid_size // 2, self.grid_size // 2)]  # 蛇的初始位置 (环境中心)
         self.direction = Direction.RIGHT  
@@ -95,6 +95,11 @@ class snakeEnv(gym.Env):
 
     def render(self, mode='human'):
 
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+
         self.screen.fill((0, 0, 0))
         
         # snake
@@ -129,6 +134,7 @@ class snakeEnv(gym.Env):
             x = np.random.randint(0, self.grid_size)
             y = np.random.randint(0, self.grid_size)
             if (x, y) not in self.snake:
+                self.food = (x, y)
                 return (x, y)
             
 
