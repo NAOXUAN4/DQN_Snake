@@ -21,10 +21,13 @@ def plot_scores(scores, mean_scores):
     plt.text(len(mean_scores)-1, mean_scores[-1], str(mean_scores[-1]))
     plt.pause(0.1)
 
-def train():
+def train(load_checkpoint = Config.checkpoint_path):
 
     # 初始化
     render_every = Config.render_every
+    
+    #初始化探索率
+    epsilon = Config.epsilon_default
 
     env = snakeEnv()
     state_size = env.observation_space.shape[0] #11
@@ -37,12 +40,22 @@ def train():
     total_score = 0
     record = 0  # 最高记录# 数据记录
 
+    # 加载checkpoint
+    start_episode = 0
+    if load_checkpoint:
+        start_episode, best_score,epsilon = agent.load_model(load_checkpoint)
+        print(f"Loaded model from episode {start_episode} with record {best_score}")
+
     # 训练
     for e in range(Config.episodes):
         
         state = env.reset()
         isDead = False
         score = 0
+
+        # epsilon衰减
+        if epsilon > Config.epsilon_min:  # 最小探索率
+            epsilon *= Config.epsilon_decay  # 衰减因子
 
         while not isDead:
             # render
@@ -51,7 +64,7 @@ def train():
                 time.sleep(0.1)
 
             # prediect action 
-            action = agent.act(state)  # max(Q_vlaues)
+            action = agent.act(state, epsilon= epsilon)  # max(Q_vlaues)
 
             # take action
             next_state, reward, isDead, _ = env.step(action)
@@ -77,13 +90,14 @@ def train():
 
         if score > record:
             record = score
+            agent.save_model(e, record, epsilon)  # 保存最好的模型
 
         # 打印训练信息
-        print(f'Game {e} Score {score} Record {record}')
+        print(f'Game {e} Score {score} Record {record} epsilon {epsilon}')
 
-        # # 更新得分图
-        # if episode_now % Config.plot_scores_every == 0:
-        #     plot_scores(scores, mean_scores)
+        # 更新得分图
+        if e % Config.plot_scores_every == 0:
+            plot_scores(scores, mean_scores)
 
     env.close()
     plt.close()
@@ -94,7 +108,4 @@ def train():
 
 
 if __name__ == "__main__":
-
-
-
     train()

@@ -3,6 +3,9 @@ import torch
 import torch.nn as nn
 import random
 from collections import deque
+import os
+
+from sympy.physics.paulialgebra import epsilon
 
 from snake_config import Config
 
@@ -21,7 +24,6 @@ class DQNAgent:
         
         self.memory = deque(maxlen=2000)  # 经验回放缓冲区
         self.gamma = Config.gamma       # 折扣因子
-        self.epsilon = Config.epsilon   # 探索率
         self.learning_rate = Config.learning_rate  # 学习率
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)   #配置Adam优化器  (Momenteum(指数平均) + RMSprop(微分减振))
         print("\nDQN Agent Initialized\n")
@@ -59,15 +61,12 @@ class DQNAgent:
         loss.backward()             # 反向传播
         self.optimizer.step()       # 更新参数
 
-        # epsilon衰减
-        if self.epsilon > 0.01:  # 最小探索率
-            self.epsilon *= 0.995  # 衰减因子
         
         return loss.item()
 
 
-    def act(self, state):  # action
-        if random.random() < self.epsilon:  # 探索
+    def act(self, state, epsilon):  # action
+        if random.random() < epsilon:  # 探索
             return random.randrange(self.action_size)
         else:  # 对当前状态选择最优动作
             state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(Config.device)  # shape: (1, state_size)
@@ -79,29 +78,28 @@ class DQNAgent:
         self.memory.append((state, action, reward, next_state, done))
 
 
-# if __name__ == '__main__':
+    def save_model(self, episode, record, epsilon_):
+        
+        # 读取模型保存路径
+        checkpoint_dir = Config.checkpoint_dir
+        os.makedirs(checkpoint_dir, exist_ok=True)
 
-#     """
-#         state = [
-#             head_x/self.grid_size,                    # 蛇头x坐标
-#             head_y/self.grid_size,                    # 蛇头y坐标
-#             self.food[0]/self.grid_size,              # 食物x坐标
-#             self.food[1]/self.grid_size,              # 食物y坐标
-#             danger_straight,                          # 前方危险
-#             danger_right,                             # 右方危险
-#             danger_left,                              # 左方危险
-#             self.direction == Direction.RIGHT,        # 当前方向
-#             self.direction == Direction.DOWN,
-#             self.direction == Direction.LEFT,
-#             self.direction == Direction.UP
-#         ]
-#     """
-#     agent = DQNAgent(state_size=5, action_size=6)
 
-#     batch_size = 10
-#     for i in range(batch_size):
-#         state = np.random.rand(5)
-#         action = agent.act(state)
-#         reward, next_state, done = 1, np.random.rand(5), False
-#         agent.memory.append((state, action, reward, next_state, done))
-#     agent.train(batch_size=batch_size)
+        checkpoint = {
+            'episode': episode,
+            'model_state_dict': self.model.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict(),
+            'epsilon': epsilon_,
+            'record': record
+        }
+
+        path = os.path.join(checkpoint_dir, f'best.pth')
+        torch.save(checkpoint, path)
+        
+    def load_model(self, path):
+        if os.path.exists(path):
+            checkpoint = torch.load(path)
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            return checkpoint['episode'], checkpoint['record'],checkpoint['epsilon']
+        return 0,0,0
