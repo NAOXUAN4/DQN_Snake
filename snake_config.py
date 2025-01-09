@@ -41,7 +41,7 @@ class Config:
       checkpoint_dir = "checkpoints"  # 保存 checkpoint 的名称
       checkpoint_path = None # 训练时加载的 checkpoint
 
-      episodes = 10000 # 训练次数
+      episodes = 20000 # 训练次数
       render_every = 100  # 每n轮显示一次游戏画面
       plot_scores_every = 100  # 每n轮更新一次得分图
 
